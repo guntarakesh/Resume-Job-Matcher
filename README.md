@@ -1,5 +1,3 @@
-Yes. Since you've changed the project from **OpenAI + GPT-3.5** to **Gemini 2.5 + Gemini Embeddings** and enhanced the UI, your README should reflect those changes. Here's an updated version you can use.
-
 ---
 
 # AI Resume Intelligence Platform (RAG-Enabled)
