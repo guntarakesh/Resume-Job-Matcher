@@ -1,162 +1,254 @@
+Yes. Since you've changed the project from **OpenAI + GPT-3.5** to **Gemini 2.5 + Gemini Embeddings** and enhanced the UI, your README should reflect those changes. Here's an updated version you can use.
+
+---
+
+# AI Resume Intelligence Platform (RAG-Enabled)
+
 <div align="center">
 
-<h1>ResumeMatcher (RAG-Enabled)</h1>
+# 🤖 AI Resume Intelligence Platform
 
-<img src="images/readme_image.jpg" alt="My Project Logo" width="500"/>
+AI-powered ATS Resume Analyzer using **Gemini 2.5 Flash**, **LangChain**, **FAISS**, and **Retrieval-Augmented Generation (RAG)**.
+
+<img src="images/readme_image.jpg" alt="Project Banner" width="700"/>
 
 </div>
 
-## **Project Overview**
+---
 
-**ResumeMatcher (RAG-Enabled)** is an AI-powered tool for **matching resumes to job descriptions**. It uses a **Retrieval-Augmented Generation (RAG) pipeline**:
+# Project Overview
 
-1. Text from resumes and job descriptions is **extracted and cleaned** from PDF, DOCX, or TXT files.
-2. Text is **converted into embeddings** using OpenAI’s embedding model.
-3. Embeddings are stored in a **FAISS index** for fast similarity search.
-4. When comparing a resume to a job description:
-   - The system retrieves relevant context from the FAISS index.
-   - Sends the resume, job description, and retrieved context to an **LLM (GPT-3.5)**.
-   - Produces a **match score (0-100)** and **explanation bullets** for the match.
-5. Users can interact with the system via **CLI** or **Streamlit web interface**.
+**AI Resume Intelligence Platform** helps candidates evaluate how well their resumes match a job description using **Google Gemini**, **LangChain**, and **FAISS vector search**.
 
-**URL:** [https://resumematcher-rag.streamlit.app/](https://resumematcher-rag.streamlit.app/)  
+Instead of simple keyword matching, the system performs **semantic similarity search** using **Retrieval-Augmented Generation (RAG)**, enabling context-aware resume analysis and personalized recommendations.
+
+The application provides:
+
+* 🎯 ATS Match Score
+* ✅ Candidate Strengths
+* ❌ Missing Skills
+* 💡 Resume Improvement Suggestions
+* 🎤 AI-generated Interview Questions
+
+Users can analyze resumes through both a **CLI** and a **Streamlit Web Application**.
 
 ---
 
-**Repository structure**  
+# Architecture
+
+```
+Resume + Job Description
+            │
+            ▼
+Text Extraction (PDF/DOCX/TXT)
+            │
+            ▼
+Text Cleaning
+            │
+            ▼
+Gemini Embeddings
+            │
+            ▼
+FAISS Vector Database
+            │
+            ▼
+Relevant Context Retrieval (RAG)
+            │
+            ▼
+Gemini 2.5 Flash
+            │
+            ▼
+ATS Score + AI Recommendations
+```
+
+---
+
+# Features
+
+* 📄 Supports PDF, DOCX and TXT files
+* 🤖 Gemini 2.5 Flash powered analysis
+* 🧠 Retrieval-Augmented Generation (RAG)
+* 🔍 Semantic search using FAISS
+* 📊 ATS Match Score
+* ✅ Matching strengths
+* ❌ Missing skills detection
+* 💡 Resume improvement suggestions
+* 🎤 Personalized interview questions
+* 📥 Downloadable JSON analysis report
+* 🌐 Streamlit Web Interface
+* 💻 Command Line Interface (CLI)
+
+---
+
+# Tech Stack
+
+| Category        | Technologies            |
+| --------------- | ----------------------- |
+| Language        | Python                  |
+| LLM             | Gemini 2.5 Flash        |
+| Embeddings      | Gemini Embedding-2      |
+| Framework       | LangChain               |
+| Vector Database | FAISS                   |
+| UI              | Streamlit               |
+| Parsing         | pdfplumber, python-docx |
+| Environment     | python-dotenv           |
+
+---
+
+# Repository Structure
 
 ```
 .
-+-- data
-|   +-- jds/                # Job description files (PDF, DOCX, TXT)
-|   +-- resumes/            # Candidate resumes (PDF, DOCX, TXT)
-+-- index                   # FAISS index files
-|   +-- index.faiss
-|   +-- index.pkl
-|   +-- index_store.faiss
-|   +-- index_store.pkl
-+-- output
-|   +-- console.txt         # Example output from model
-+-- src
-|   +-- main.py             # Main script
-+-- LICENSE
-+-- README.md
-+-- requirements.txt
+├── data
+│   ├── resumes/
+│   └── jds/
+│
+├── cache/
+│
+├── index/
+│
+├── images/
+│
+├── src/
+│   └── main.py
+│
+├── requirements.txt
+├── README.md
+└── LICENSE
 ```
 
 ---
 
-## **Pipeline Diagram**
+# Installation
 
-
- A [Resume + Job Description] --> B [Text Extraction & Cleaning]<br>
- B --> C [Convert to Embeddings]<br>
- C --> D [FAISS Index / Retriever]<br>
- D --> E [Prompt Template + Context]<br>
- E --> F [LLM (GPT-3.5)]<br>
- F --> G [Output: Score + Explanation]
-
----
-
-## **Features**
-
-- Supports multiple file formats: PDF, DOCX, TXT.
-- Generates structured JSON output with:
-  - `score` → numeric match score (0–100)
-  - `explanation` → key points justifying the score
-- RAG-based retrieval from FAISS index for context-aware matching.
-- CLI and web interface support.
-- Clean temporary file handling for uploads.
-- Ready for deployment on Streamlit.
-
----
-
-## **Installation**
-
-1. Clone the repository:
+Clone the repository
 
 ```bash
-git clone https://github.com/yourusername/resumematcher.git
-cd resumematcher
+git clone https://github.com/<your-username>/AI-Resume-Intelligence-Platform.git
+
+cd AI-Resume-Intelligence-Platform
 ```
 
-2. Create a virtual environment:
+Create virtual environment
 
 ```bash
 python -m venv venv
-source venv/bin/activate   # Linux/macOS
-venv\Scripts\activate      # Windows
 ```
 
-3. Install dependencies:
+Linux / macOS
+
+```bash
+source venv/bin/activate
+```
+
+Windows
+
+```bash
+venv\Scripts\activate
+```
+
+Install dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-4. Set up your OpenAI API key in a `.env` file:
+Create a `.env` file
 
-```
-OPENAI_API_KEY=your_openai_api_key
+```env
+GOOGLE_API_KEY=YOUR_GEMINI_API_KEY
 ```
 
 ---
 
-## **Usage**
+# Usage
 
-### **1. Index documents**
+## Index Documents
 
 ```bash
 python src/main.py --action index --data-dir ./data --index-dir ./index
 ```
 
-- Scans `data/resumes` and `data/jds`
-- Extracts text and stores embeddings in the FAISS index.
-- Saves the index to `index/`.
-
 ---
 
-### **2. Match a resume to a job description (CLI)**
+## Match Resume (CLI)
 
 ```bash
-python src/main.py --action match --resume ./data/resumes/resume.pdf --jd ./data/jds/job.pdf --index-dir ./index
+python src/main.py \
+--action match \
+--resume ./data/resumes/resume.pdf \
+--jd ./data/jds/job.pdf \
+--index-dir ./index
 ```
-
-- Produces JSON output with `score` and `explanation`.  
-- Example output is stored in `output/console.txt`.
 
 ---
 
-### **3. Run the Streamlit web interface**
+## Run Streamlit
 
 ```bash
-streamlit run src/main.py -- --action serve --index-dir ./index
-```
-
-- **URL:** [https://resumematcher-rag.streamlit.app/](https://resumematcher-rag.streamlit.app/)  
-- Upload a resume and job description through the UI.  
-- Click **Get Match Score** to see the match score and explanations.  
-
----
-
-## **Output Example**
-
-`output/console.txt` contains an example JSON:
-
-```json
-{
-  "score": 85,
-  "explanation": [
-    "Candidate has strong Python skills matching job requirements",
-    "Relevant experience in data analysis and machine learning",
-    "No experience listed in cloud deployment required by job"
-  ]
-}
+streamlit run src/main.py -- --action serve
 ```
 
 ---
 
-## **Future Improvements**
+# Example Output
 
-- Support for more file formats (ODT, RTF).  
-- Advanced scoring with weighted skills and experience.  
+```
+ATS Match Score
+92%
+
+✅ Matching Strengths
+
+• Strong Python experience
+• Experience with AWS
+• Machine Learning knowledge
+• Backend Development
+• REST API Development
+
+❌ Missing Skills
+
+• Docker
+• Kubernetes
+• TensorFlow
+
+💡 Resume Improvements
+
+• Quantify project impact
+• Add cloud deployment experience
+• Mention scalable system design
+
+🎤 Interview Questions
+
+• Explain FAISS indexing.
+• What is Retrieval-Augmented Generation?
+• How does semantic search work?
+```
+
+---
+
+# Future Improvements
+
+* Export report as PDF
+* Multi-resume comparison
+* Skill gap visualization
+* Resume keyword highlighting
+* Company-specific ATS optimization
+* Cover Letter Generator
+* AI Resume Rewriter
+* Dashboard Analytics
+
+---
+
+```md
+## Application
+
+### Home
+
+![Home](images/home.png)
+
+### Resume Analysis
+
+![Result](images/result.png)
+```
+
+---

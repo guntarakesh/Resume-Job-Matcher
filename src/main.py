@@ -3,6 +3,7 @@ import argparse
 import pathlib
 import tempfile
 import logging
+import json
 
 import pdfplumber
 import docx
@@ -10,9 +11,15 @@ import docx
 from langchain_core.documents import Document
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnablePassthrough
-from langchain_core.output_parsers import SimpleJsonOutputParser
+from langchain_core.output_parsers import JsonOutputParser
 from langchain_community.vectorstores import FAISS
-from langchain_openai import OpenAIEmbeddings, ChatOpenAI
+from langchain_google_genai import (
+    GoogleGenerativeAIEmbeddings,
+    ChatGoogleGenerativeAI,
+)
+from dotenv import load_dotenv
+load_dotenv()
+
 
 try:
     import streamlit as st
@@ -23,27 +30,34 @@ except ImportError:
 logging.getLogger("pdfminer").setLevel(logging.ERROR)
 
 MATCHING_PROMPT_TEMPLATE = """
-You are an expert recruiter. Your task is to compare a candidate's resume against a job description.
-The goal is to determine the suitability and quantify the match.
-You must identify both:
-- Areas of strong alignment (skills, experience, achievements that match the job)
-- Gaps or mismatches (missing skills, insufficient experience, irrelevant background)
+You are an experienced Technical Recruiter and ATS Resume Analyzer.
 
-Return your complete response as a single JSON object that conforms to this schema:
+Compare the candidate's resume against the job description.
+
+Perform the following analysis:
+
+1. ATS Match Score (0-100)
+2. Candidate Strengths
+3. Missing Skills
+4. Resume Improvement Suggestions
+5. Recommended Interview Questions
+
+Return ONLY valid JSON.
+
 {{
-    "score": <int, 0-100, where 100 is a perfect match>,
-    "explanation": <list of strings, key bullet points justifying the score, highlighting matches and gaps>
+    "score": 0,
+    "strengths": [],
+    "missing_skills": [],
+    "resume_improvements": [],
+    "interview_questions": []
 }}
 
----
 Resume:
 {resume}
 
----
-Job:
+Job Description:
 {job}
 
----
 Retrieved Context:
 {context}
 """
@@ -92,8 +106,11 @@ def extract_and_cache(path: str, cache_dir: str = "./cache") -> str:
     return cleaned
 
 # Embeddings / Indexing
-def get_embeddings() -> OpenAIEmbeddings:
-    return OpenAIEmbeddings()
+def get_embeddings():
+    return GoogleGenerativeAIEmbeddings(
+        model="models/gemini-embedding-2",
+        google_api_key=os.getenv("GOOGLE_API_KEY"),
+    )
 
 def index_documents(data_dir: str, index_dir: str):
     resumes = pathlib.Path(data_dir) / "resumes"
@@ -144,7 +161,12 @@ def match(resume_path: str, jd_path: str, index_dir: str, k: int = 5) -> dict:
     if not retriever:
         return {"error": "Could not load index."}
 
-    llm = ChatOpenAI(temperature=0, model_name="gpt-3.5-turbo-0125")
+    llm = ChatGoogleGenerativeAI(
+    model="gemini-2.5-flash",
+    temperature=0,
+    google_api_key=os.getenv("GOOGLE_API_KEY"),
+    response_mime_type="application/json",
+    )
     prompt = ChatPromptTemplate.from_template(MATCHING_PROMPT_TEMPLATE)
 
     rag_chain = (
@@ -153,7 +175,7 @@ def match(resume_path: str, jd_path: str, index_dir: str, k: int = 5) -> dict:
         )
         | prompt
         | llm
-        | SimpleJsonOutputParser()
+        | JsonOutputParser()
     )
 
     try:
@@ -163,12 +185,26 @@ def match(resume_path: str, jd_path: str, index_dir: str, k: int = 5) -> dict:
 
 # Streamlit UI
 def run_ui(index_dir: str):
+    with st.sidebar:
+        st.header("About")
+
+        st.write("""
+    This application compares resumes against job descriptions using:
+
+    - Gemini 2.5 Flash
+    - LangChain
+    - FAISS Vector Search
+    - Retrieval-Augmented Generation (RAG)
+
+    Developed by Rakesh Gunta.
+    """)
     if not STREAMLIT:
         print("Streamlit not installed.")
         return
-    st.title("ResumeMatcher")
-    r_file = st.file_uploader("Upload Resume", type=["pdf", "txt", "docx", "doc"])
-    j_file = st.file_uploader("Upload Job Description", type=["pdf", "txt", "docx", "doc"])
+    st.title("🤖 AI Resume Intelligence Platform")
+    st.caption("Powered by Gemini 2.5 Flash • LangChain • FAISS • Streamlit")
+    r_file = st.file_uploader("📄 Upload Resume", type=["pdf", "txt", "docx", "doc"])
+    j_file = st.file_uploader("📋 Upload Job Description", type=["pdf", "txt", "docx", "doc"])
     if r_file and j_file:
         temp_paths = {}
         for file, name in ((r_file, "r"), (j_file, "j")):
@@ -178,16 +214,62 @@ def run_ui(index_dir: str):
             tf.close()
             temp_paths[name] = tf.name
 
-        if st.button("Get Match"):
-            with st.spinner("Analyzing..."):
+        if st.button("🚀 Analyze Resume"):
+            with st.spinner("🤖 Gemini is analyzing your resume..."):
                 res = match(temp_paths["r"], temp_paths["j"], index_dir)
                 if "error" in res:
                     st.error(res["error"])
                 elif "score" in res:
-                    st.success(f"Score: {res['score']}/100")
-                    st.write("Explanations:")
-                    for item in res.get("explanation", []):
-                        st.write("- " + str(item))
+                    if res["score"] >= 85:
+                        st.success("Excellent Match 🚀")
+
+                    elif res["score"] >= 70:
+                        st.info("Good Match 👍")
+
+                    elif res["score"] >= 50:
+                        st.warning("Average Match")
+
+                    else:
+                        st.error("Needs Improvement")
+
+                    st.progress(min(max(res["score"] / 100, 0), 1))
+
+                    st.divider()
+
+                    st.subheader("✅ Matching Strengths")
+
+                    for s in res.get("strengths", []):
+                        st.success(s)
+
+                    st.divider()
+
+                    st.subheader("❌ Missing Skills")
+
+                    for s in res.get("missing_skills", []):
+                        st.warning(s)
+
+                    st.divider()
+
+                    st.subheader("💡 Resume Improvements")
+
+                    for s in res.get("resume_improvements", []):
+                        st.info(s)
+
+                    st.divider()
+
+                    st.subheader("🎤 Suggested Interview Questions")
+
+                    for q in res.get("interview_questions", []):
+                        st.write("•", q)
+
+                    report = json.dumps(res, indent=4)
+
+                    st.download_button(
+                        label="📥 Download Report",
+                        data=report,
+                        file_name="resume_analysis.json",
+                        mime="application/json",
+                    )
                 else:
                     st.write(res)
 
