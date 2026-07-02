@@ -1,0 +1,23 @@
+➜  src git:(main) ✗ python /home/es/Desktop/code/jd/main.py \                                
+    --action index \
+    --data-dir /home/es/Desktop/code/jd/data \
+    --index-dir /home/es/Desktop/code/jd/index
+/home/es/.pyenv/versions/lewagon/bin/python: can't open file '/home/es/Desktop/code/jd/main.py': [Errno 2] No such file or directory
+
+➜  src git:(main) ✗ python /home/es/Desktop/code/jd/src/main.py \                            
+    --action match \
+    --resume /home/es/Desktop/code/jd/data/resumes/example.pdf \
+    --jd /home/es/Desktop/code/jd/data/jds/example_jd.pdf \
+    --index-dir /home/es/Desktop/code/jd/index
+    
+[Info] Initializing OpenAI embeddings...
+{
+  "score": 65,
+  "explanation": [
+    "The candidate has a strong background in data science and statistics, which aligns well with the job requirements for an AI/LLM Engineer.",
+    "The candidate's experience in data analysis, experiments, and machine learning projects demonstrates relevant skills for the position.",
+    "Proficiency in programming languages like Python and experience with cloud services like AWS are beneficial for the role.",
+    "While the candidate may lack specific experience in natural language processing (NLP) and AI-driven web system development, their overall skill set and background make them a suitable candidate for the position.",
+    "The candidate's projects involving machine learning, data visualization, and data analysis showcase their ability to work on similar tasks required for the AI/LLM Engineer role."
+  ]
+}
